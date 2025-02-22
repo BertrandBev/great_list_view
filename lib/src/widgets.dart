@@ -1,7 +1,7 @@
 part of 'core.dart';
 
 /// A scrollable and animated list of widgets arranged linearly, inspired by [ListView].
-class AnimatedListView extends BoxScrollView {
+class AnimatedListView extends CustomBoxScrollView {
   /// Constructs an animated list view.
   ///
   /// Most of the attributes are identical to those of the [ListView].
@@ -129,6 +129,8 @@ class AnimatedListView extends BoxScrollView {
         ScrollViewKeyboardDismissBehavior.manual,
     String? restorationId,
     Clip clipBehavior = Clip.hardEdge,
+    Widget? header,
+    Widget? footer,
   }) : super(
           key: key,
           scrollDirection: scrollDirection,
@@ -144,6 +146,8 @@ class AnimatedListView extends BoxScrollView {
           keyboardDismissBehavior: keyboardDismissBehavior,
           restorationId: restorationId,
           clipBehavior: clipBehavior,
+          header: header,
+          footer: footer,
         );
 
   final AnimatedListController listController;
@@ -273,6 +277,8 @@ class AutomaticAnimatedListView<T> extends AnimatedListView {
         ScrollViewKeyboardDismissBehavior.manual,
     String? restorationId,
     Clip clipBehavior = Clip.hardEdge,
+    Widget? header,
+    Widget? footer,
   }) : super.custom(
           key: key,
           scrollDirection: scrollDirection,
@@ -290,6 +296,8 @@ class AutomaticAnimatedListView<T> extends AnimatedListView {
           clipBehavior: clipBehavior,
           itemExtent: itemExtent,
           listController: listController,
+          header: header,
+          footer: footer,
           delegate: AnimatedSliverChildBuilderDelegate(
             (context, index, data) {
               return itemBuilder(context, list[index], data);
@@ -319,6 +327,8 @@ class AutomaticAnimatedListView<T> extends AnimatedListView {
   final List<T> list;
 
   final bool detectMoves;
+
+  // final Widget? header;
 
   @override
   Widget buildChildLayout(BuildContext context) {
@@ -546,4 +556,42 @@ class AnimatedListReorderModel extends AnimatedListBaseReorderModel {
   @override
   bool onReorderComplete(int index, int dropIndex, Object? slot) =>
       _onReorderComplete?.call(index, dropIndex, slot) ?? false;
+}
+
+/// A BoxScrollView with support for header and footer
+abstract class CustomBoxScrollView extends BoxScrollView {
+  const CustomBoxScrollView({
+    super.key,
+    super.scrollDirection,
+    super.reverse,
+    super.controller,
+    super.primary,
+    super.physics,
+    super.shrinkWrap,
+    super.padding,
+    super.cacheExtent,
+    super.semanticChildCount,
+    super.dragStartBehavior,
+    super.keyboardDismissBehavior,
+    super.restorationId,
+    super.clipBehavior,
+    super.hitTestBehavior,
+    this.header,
+    this.footer,
+  });
+
+  final Widget? header;
+  final Widget? footer;
+
+  @override
+  List<Widget> buildSlivers(BuildContext context) {
+    final widgets = super.buildSlivers(context);
+    if (header != null) {
+      widgets.insert(0, SliverToBoxAdapter(child: header));
+    }
+    if (footer != null) {
+      widgets.add(SliverToBoxAdapter(child: footer));
+    }
+    return widgets;
+  }
 }
